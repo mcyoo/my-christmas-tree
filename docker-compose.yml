@@ -1,0 +1,51 @@
+name: my-christmas-tree
+
+services:
+  web:
+    build:
+      context: ./app
+    image: my-christmas-tree-web
+    restart: unless-stopped
+    environment:
+      DATABASE_PATH: /data/trees.sqlite
+    volumes:
+      - tree-data:/data
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  nginx:
+    build:
+      context: ./nginx
+    image: my-christmas-tree-nginx
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
+      SSL_ENABLED: ${SSL_ENABLED:-auto}
+      LETSENCRYPT_STAGING: ${LETSENCRYPT_STAGING:-false}
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+
+volumes:
+  tree-data:
+  letsencrypt:
+  certbot-www:

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>__PAGE_TITLE__</title>
+  <meta property="og:title" content="__PAGE_TITLE__">
+  <meta property="og:description" content="내가 꾸민 크리스마스 트리를 확인해 보세요.">
+  <meta name="description" content="장식을 끌어 크리스마스 트리를 꾸미고, 링크로 다른 사람에게 보여 주세요.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23e4c27a' d='M16 2.2 18.7 11h8.8l-7.1 5.2 2.7 8.6L16 19.8 8.9 24.8l2.7-8.6L4.5 11h8.8z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Song+Myung&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=5">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path fill="currentColor" d="M16 2.2 18.7 11h8.8l-7.1 5.2 2.7 8.6L16 19.8 8.9 24.8l2.7-8.6L4.5 11h8.8z"/>
+        </svg>
+        <div>
+          <p class="eyebrow">Christmas Studio</p>
+          <h1>나만의 크리스마스 트리 꾸미기</h1>
+        </div>
+      </div>
+      <div class="toolbar" id="editor-actions">
+        <label class="title-field">
+          <span>트리 이름</span>
+          <input id="tree-title" maxlength="40" value="나의 크리스마스 트리" autocomplete="off">
+        </label>
+        <p id="save-state" class="save-state edit-only">아직 저장하지 않았어요</p>
+        <button type="button" id="btn-undo" class="edit-only" disabled>되돌리기</button>
+        <button type="button" id="btn-clear" class="edit-only">비우기</button>
+        <button type="button" id="btn-save" class="primary edit-only">저장하고 공유</button>
+      </div>
+    </header>
+
+    <div id="view-bar" class="view-bar" hidden>
+      <p id="view-text">공유된 트리</p>
+      <div class="view-actions">
+        <button type="button" id="btn-copy-view">링크 복사</button>
+        <button type="button" id="btn-remix" class="primary">복사해서 꾸미기</button>
+        <a class="text-link" href="/">새 트리</a>
+      </div>
+    </div>
+
+    <main>
+      <section class="stage" aria-label="크리스마스 트리">
+        <div class="stage-tools edit-only">
+          <div class="tool-row" role="group" aria-label="트리 모양">
+            <button type="button" data-tree="green" class="active">초록 트리</button>
+            <button type="button" data-tree="snow">눈 덮인 트리</button>
+            <button type="button" data-tree="wood">회색 나무</button>
+          </div>
+          <div class="tool-row" role="group" aria-label="전구 반짝임">
+            <button type="button" data-twinkle="steady">켜짐</button>
+            <button type="button" data-twinkle="soft" class="active">은은하게</button>
+            <button type="button" data-twinkle="chase">차례로</button>
+            <button type="button" data-twinkle="spark">빠르게</button>
+            <button type="button" data-twinkle="random">무작위</button>
+          </div>
+        </div>
+        <div id="canvas-host"></div>
+        <p id="empty-hint">장식을 끌어 트리 위에 놓으세요. 올린 장식의 점을 끌면 크기가 바뀝니다.</p>
+        <p id="stage-message" hidden></p>
+      </section>
+
+      <aside class="inventory" id="inventory">
+        <div class="inventory-head">
+          <div>
+            <p class="eyebrow">Ornament box</p>
+            <h2>장식 상자</h2>
+          </div>
+          <p id="item-count">장식 0개</p>
+        </div>
+        <p class="inventory-help">같은 장식을 여러 번 올릴 수 있어요. 전구 감기는 트리 안을 클릭하면 그 높이에 감기고, 크기는 점만 끌어서 바꿉니다.</p>
+        <div id="item-grid" class="item-grid"></div>
+        <p class="key-hint">크기 점을 끌어서 조절 · 두 번 누르면 지우기 · Ctrl/⌘ Z 되돌리기</p>
+        <input id="media-input" type="file" accept="image/*,video/*" hidden>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="share-dialog">
+    <p class="eyebrow">Share</p>
+    <h2>트리를 나눌 준비가 됐어요</h2>
+    <p class="dialog-copy">이 링크를 보내면 같은 트리를 볼 수 있어요. 이어서 수정하는 권한은 저장한 이 브라우저에만 남아요.</p>
+    <label class="share-field">
+      <span>공유 링크</span>
+      <input id="share-url" readonly>
+    </label>
+    <div class="dialog-actions">
+      <button type="button" id="btn-copy-share" class="primary">링크 복사</button>
+      <button type="button" id="btn-close-share">닫기</button>
+    </div>
+  </dialog>
+  <div id="toast" role="status"></div>
+
+  <script src="/vendor/p5.min.js?v=5"></script>
+  <script src="/js/sketch.js?v=5"></script>
+  <script src="/js/app.js?v=5"></script>
+</body>
+</html>
