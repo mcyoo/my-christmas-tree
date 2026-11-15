@@ -71,6 +71,41 @@ button { cursor: pointer; }
 
 h1, h2, .dialog-copy, p { margin: 0; }
 
+html[lang="en"] h1,
+html[lang="en"] h2,
+html[lang="en"] .letters h2,
+html[lang="en"] dialog h2 {
+  font-family: "Iowan Old Style", Palatino, "Palatino Linotype", "Song Myung", serif;
+}
+
+html[lang="zh-Hans"] body,
+html[lang="zh-Hans"] button,
+html[lang="zh-Hans"] input,
+html[lang="zh-Hans"] textarea {
+  font-family: "Noto Sans SC", "IBM Plex Sans KR", sans-serif;
+}
+
+html[lang="zh-Hans"] h1,
+html[lang="zh-Hans"] h2,
+html[lang="zh-Hans"] .letters h2,
+html[lang="zh-Hans"] dialog h2 {
+  font-family: "Noto Sans SC", sans-serif;
+}
+
+html[lang="ja"] body,
+html[lang="ja"] button,
+html[lang="ja"] input,
+html[lang="ja"] textarea {
+  font-family: "Noto Sans JP", "IBM Plex Sans KR", sans-serif;
+}
+
+html[lang="ja"] h1,
+html[lang="ja"] h2,
+html[lang="ja"] .letters h2,
+html[lang="ja"] dialog h2 {
+  font-family: "Noto Sans JP", sans-serif;
+}
+
 h1 {
   font-family: "Song Myung", "Apple SD Gothic Neo", serif;
   font-size: 28px;
@@ -85,6 +120,24 @@ h1 {
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.lang-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lang-switch button {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.lang-switch button.active {
+  background: var(--gold);
+  color: #1b2420;
+  border-color: transparent;
 }
 
 .title-field {
@@ -111,6 +164,8 @@ h1 {
 
 .title-field input:focus,
 .share-field input:focus,
+.letter-form input:focus,
+.letter-form textarea:focus,
 button:focus-visible,
 .item-card:focus-visible,
 .text-link:focus-visible {
@@ -187,39 +242,6 @@ main {
   touch-action: pan-y;
 }
 
-.stage-tools {
-  position: absolute;
-  z-index: 3;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.tool-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  pointer-events: auto;
-}
-
-.stage-tools button {
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(7, 17, 14, 0.72);
-  font-size: 13px;
-}
-
-.stage-tools button.active {
-  background: var(--gold);
-  color: #1b2420;
-  border-color: transparent;
-}
-
 #canvas-host canvas {
   width: 100% !important;
   height: 100% !important;
@@ -288,6 +310,146 @@ main {
 
 .inventory-help { margin: 10px 0 14px; line-height: 1.45; }
 .key-hint { margin-top: 14px; line-height: 1.45; }
+
+.picker { margin-top: 14px; }
+
+.picker-label {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.picker-row button {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.picker-row button.active {
+  background: var(--gold);
+  color: #1b2420;
+  border-color: transparent;
+}
+
+.received { margin-top: 18px; }
+
+.letters {
+  width: 340px;
+  flex: none;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--panel);
+  border: 1px solid var(--gold-dim);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.letters h2 {
+  font-family: "Song Myung", "Apple SD Gothic Neo", serif;
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.letter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.letter-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.letter-form input,
+.letter-form textarea {
+  border-radius: 10px;
+  border: 1px solid var(--gold-dim);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px 12px;
+  color: var(--cream);
+}
+
+.letter-form textarea {
+  min-height: 96px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.45;
+}
+
+.letter-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#letter-photo-name {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.letter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.letter-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.letter-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--gold);
+  font-size: 13px;
+}
+
+.letter-meta time {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.letter-body {
+  margin-top: 6px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.letter-card img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.letter-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
 
 .item-grid {
   display: grid;
@@ -413,19 +575,12 @@ dialog h2 {
     min-height: 0;
     overflow: visible;
   }
-  .stage-tools {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    padding: 10px 10px 0;
-  }
   #canvas-host {
     position: relative;
     inset: auto;
     height: 68vh;
   }
-  .inventory { width: auto; }
+  .inventory, .letters { width: auto; }
   .item-card { touch-action: none; }
 }
 

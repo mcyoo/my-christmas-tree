@@ -15,6 +15,18 @@
   let dragging = null;
   let pickup = null;
   let toastTimer = 0;
+  let sendingLetter = false;
+  let letterPhotoLabel = "";
+  let saveNote = "saveNew";
+  let viewNote = null;
+  let titleCustom = false;
+  let latestLetters = [];
+  const t = (key, vars) => (window.t ? window.t(key, vars) : key);
+  const say = (error, fallback) => {
+    const message = error && error.message;
+    if (message && window.translateError) return window.translateError(message);
+    return message || t(fallback);
+  };
 
   const mobileQuery = window.matchMedia("(max-width: 900px)");
   const isMobileLayout = () => mobileQuery.matches;
@@ -22,7 +34,7 @@
   if (!window.p5 || !window.createTreeStudio) {
     const message = $("stage-message");
     message.hidden = false;
-    message.textContent = "화면을 불러오지 못했어요. 새로고침해 주세요.";
+    message.textContent = t("screenFail");
     return;
   }
 
@@ -32,6 +44,11 @@
     onChange: sync,
     onNotice: toast,
   });
+
+  if (window.isDefaultTitle && window.isDefaultTitle(titleInput.value)) {
+    titleInput.value = t("defaultTitle");
+  }
+  window.onTreeLanguage = refreshLanguage;
 
   renderInventory();
   refreshHint();
@@ -43,20 +60,24 @@
   new ResizeObserver(() => studio.resize()).observe(host);
 
   titleInput.addEventListener("input", () => {
+    titleCustom = !(window.isDefaultTitle && window.isDefaultTitle(titleInput.value));
     if (mode === "edit") markDirty();
   });
 
   $("btn-undo").addEventListener("click", () => studio.undo());
   $("btn-clear").addEventListener("click", () => {
     if (!studio.getItems().length) return;
-    if (!window.confirm("올린 장식을 모두 지울까요?")) return;
+    if (!window.confirm(t("clearConfirm"))) return;
     studio.clear();
   });
   saveButton.addEventListener("click", saveTree);
   $("btn-copy-share").addEventListener("click", () => copyText($("share-url").value));
   $("btn-close-share").addEventListener("click", () => $("share-dialog").close());
   $("btn-copy-view").addEventListener("click", () => copyText(location.href));
-  $("btn-remix").addEventListener("click", remix);
+  $("letter-form").addEventListener("submit", sendLetter);
+  $("btn-letter-photo").addEventListener("click", () => $("letter-photo").click());
+  $("letter-photo").addEventListener("change", onLetterPhotoPicked);
+  $("btn-letter-photo-clear").addEventListener("click", clearLetterPhoto);
 
   host.addEventListener("dragover", (event) => {
     if (!dragging || mode !== "edit") return;
@@ -124,7 +145,8 @@
         group = item.group;
         const heading = document.createElement("h3");
         heading.className = "group-title";
-        heading.textContent = group;
+        heading.dataset.group = group;
+        heading.textContent = t(`group.${group}`);
         grid.appendChild(heading);
       }
       const card = document.createElement("div");
@@ -135,8 +157,9 @@
       card.dataset.type = item.type;
       card.dataset.color = item.color;
       card.setAttribute("aria-pressed", "false");
+      card.dataset.key = item.key;
       card.innerHTML = `<div class="swatch" style="background:${item.color}22"><img alt="" draggable="false"></div><span></span>`;
-      card.querySelector("span").textContent = item.label;
+      card.querySelector("span").textContent = t(`item.${item.key}`);
       card.draggable = !isMobileLayout();
       card.addEventListener("click", () => arm(card, item));
       card.addEventListener("keydown", (event) => {
@@ -171,11 +194,12 @@
     upload.className = "item-card upload-card";
     upload.tabIndex = 0;
     upload.role = "button";
-    upload.innerHTML = `<div class="plus-mark" aria-hidden="true">+</div><span>내 사진 · 0/5</span>`;
+    upload.innerHTML = `<div class="plus-mark" aria-hidden="true">+</div><span></span>`;
+    upload.querySelector("span").textContent = t("myPhotoCount", { n: 0 });
     upload.addEventListener("click", () => {
       if (mode !== "edit") return;
       if (studio.photoCount() >= 5) {
-        toast("사진과 영상은 5개까지 올릴 수 있어요.");
+        toast(t("limitPhotosToast"));
         return;
       }
       $("media-input").click();
@@ -226,7 +250,7 @@
     if (pickup.moved && point) {
       studio.placeAt(pickup.type, pickup.color, point.x, point.y);
     } else if (!pickup.moved) {
-      toast("트리로 이동했어요. 트리 위에서 끌어 놓으세요.");
+      toast(t("movedToTree"));
     }
     pickup = null;
   }
@@ -268,6 +292,12 @@
         markTreeControls();
       });
     });
+    document.querySelectorAll("[data-glow]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (mode !== "edit") return;
+        studio.setSelectedGlow(button.dataset.glow);
+      });
+    });
   }
 
   function markTreeControls() {
@@ -281,13 +311,19 @@
     });
   }
 
+  function markGlow(glow) {
+    document.querySelectorAll("[data-glow]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.glow === (glow || "inherit"));
+    });
+  }
+
   async function onMediaPicked() {
     const input = $("media-input");
     const file = input.files && input.files[0];
     input.value = "";
     if (!file || mode !== "edit") return;
     if (studio.photoCount() >= 5) {
-      toast("사진과 영상은 5개까지 올릴 수 있어요.");
+      toast(t("limitPhotosToast"));
       return;
     }
     try {
@@ -296,25 +332,25 @@
       body.append("file", prepared.blob, prepared.name);
       const response = await fetch("/api/media", { method: "POST", body });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "올리지 못했어요.");
+      if (!response.ok) throw new Error(data.error || t("uploadFail"));
       const placed = studio.placeAt("photo", "#e4c27a", 0.5, 0.46, { media: data.id, kind: data.kind });
       if (!placed) return;
       if (isMobileLayout()) scrollToTree();
-      toast(data.kind === "video" ? "영상을 트리에 올렸어요. 점을 끌면 크기가 바뀝니다." : "사진을 트리에 올렸어요. 점을 끌면 크기가 바뀝니다.");
+      toast(data.kind === "video" ? t("placedVideo") : t("placedPhoto"));
     } catch (error) {
-      toast(error.message || "올리지 못했어요.");
+      toast(say(error, "uploadFail"));
     }
   }
 
   async function prepareMedia(file) {
     if (file.type.startsWith("video/")) {
-      if (file.size > 8 * 1024 * 1024) throw new Error("영상은 8MB까지 올릴 수 있어요.");
+      if (file.size > 8 * 1024 * 1024) throw new Error(t("videoBig"));
       const duration = await videoDuration(file);
-      if (duration > 20) throw new Error("영상은 20초까지 올릴 수 있어요.");
+      if (duration > 20) throw new Error(t("videoLong"));
       const name = file.type === "video/webm" ? "clip.webm" : "clip.mp4";
       return { blob: file, name };
     }
-    if (!file.type.startsWith("image/")) throw new Error("이미지 또는 영상만 올릴 수 있어요.");
+    if (!file.type.startsWith("image/")) throw new Error(t("mediaOnly"));
     const blob = await compressImage(file);
     return { blob, name: "photo.jpg" };
   }
@@ -331,14 +367,19 @@
       };
       video.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error("영상을 읽지 못했어요."));
+        reject(new Error(t("videoReadFail")));
       };
       video.src = url;
     });
   }
 
   async function compressImage(file) {
-    const bitmap = await createImageBitmap(file);
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file);
+    } catch (error) {
+      throw new Error(t("readFail"));
+    }
     const limit = 480;
     const scale = Math.min(1, limit / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
@@ -347,14 +388,12 @@
     canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.72));
-    if (!blob) throw new Error("사진을 준비하지 못했어요.");
+    if (!blob) throw new Error(t("photoPrepareFail"));
     return blob;
   }
 
   function refreshHint() {
-    $("empty-hint").textContent = isMobileLayout()
-      ? "장식을 누르면 트리로 이동해요. 끌어 놓고, 점을 터치해서 크기를 바꾸세요."
-      : "장식을 끌어 트리 위에 놓으세요. 올린 장식의 점을 끌면 크기가 바뀝니다.";
+    $("empty-hint").textContent = isMobileLayout() ? t("hintMobile") : t("hintDesktop");
   }
 
   mobileQuery.addEventListener("change", () => {
@@ -388,27 +427,71 @@
   }
 
   function showSelection(info) {
+    const panel = $("bulb-options");
+    const show = Boolean(info && mode === "edit" && (info.type === "light" || info.type === "strand"));
+    panel.hidden = !show;
+    if (show) markGlow(info.glow);
     if (info && mode === "edit") $("empty-hint").hidden = true;
   }
 
-  function sync() {
-    const count = studio.getItems().length;
-    $("item-count").textContent = `장식 ${count}개`;
+  function paintCounts() {
+    $("item-count").textContent = t("itemCount", { n: studio.getItems().length });
     const photoLabel = document.querySelector("#upload-card span");
-    if (photoLabel) photoLabel.textContent = `내 사진 · ${studio.photoCount()}/5`;
+    if (photoLabel) photoLabel.textContent = t("myPhotoCount", { n: studio.photoCount() });
+  }
+
+  function setSaveNote(key) {
+    saveNote = key;
+    $("save-state").textContent = t(key);
+  }
+
+  function setViewNote(key, vars) {
+    viewNote = { key, vars: vars || {} };
+    $("view-text").textContent = t(key, viewNote.vars);
+  }
+
+  function relabelInventory() {
+    document.querySelectorAll("#item-grid [data-group]").forEach((heading) => {
+      heading.textContent = t(`group.${heading.dataset.group}`);
+    });
+    document.querySelectorAll("#item-grid [data-key]").forEach((card) => {
+      const label = card.querySelector("span");
+      if (label && card.id !== "upload-card") label.textContent = t(`item.${card.dataset.key}`);
+    });
+    paintCounts();
+  }
+
+  function refreshLanguage() {
+    if (!titleCustom && window.isDefaultTitle && window.isDefaultTitle(titleInput.value)) {
+      titleInput.value = t("defaultTitle");
+    }
+    relabelInventory();
+    refreshHint();
+    setSaveNote(saveNote);
+    if (viewNote && !$("view-bar").hidden) setViewNote(viewNote.key, viewNote.vars);
+    $("letter-photo-name").textContent = letterPhotoLabel || t("photoNone");
+    if (latestLetters) paintLetters(latestLetters);
+    const saveLabel = $("btn-save");
+    if (saveLabel && !saving) saveLabel.textContent = t("save");
+  }
+
+  function sync() {
+    paintCounts();
     $("btn-undo").disabled = !studio.canUndo();
-    $("empty-hint").hidden = mode !== "edit" || count > 0;
+    $("empty-hint").hidden = mode !== "edit" || studio.getItems().length > 0;
     if (mode === "edit") markDirty();
   }
 
   function markDirty() {
-    $("save-state").textContent = savedOnce ? "저장되지 않은 변경이 있어요" : "아직 저장하지 않았어요";
+    setSaveNote(savedOnce ? "saveDirty" : "saveNew");
   }
 
   function applyChrome() {
     document.body.classList.toggle("viewing", mode === "view");
     titleInput.readOnly = mode === "view";
     $("empty-hint").hidden = mode !== "edit" || studio.getItems().length > 0;
+    $("letters").hidden = mode !== "view" || !code;
+    $("received").hidden = mode !== "edit" || !code;
     requestAnimationFrame(() => studio.resize());
   }
 
@@ -426,6 +509,7 @@
       studio.setTwinkle(data.twinkle || "soft", { silent: true });
       markTreeControls();
       titleInput.value = data.title;
+      titleCustom = !(window.isDefaultTitle && window.isDefaultTitle(data.title));
       const stored = readTokens()[data.code];
       if (stored) {
         token = stored;
@@ -433,28 +517,27 @@
         mode = "edit";
         studio.setMode("edit");
         $("view-bar").hidden = true;
-        $("save-state").textContent = "저장됨";
+        $("save-state").textContent = t("saveSaved");
+        saveNote = "saveSaved";
       } else {
-      mode = "view";
-      stamp = null;
-      studio.setStamp(null);
-      studio.setMode("view");
+        mode = "view";
+        stamp = null;
+        studio.setStamp(null);
+        studio.setMode("view");
         $("view-bar").hidden = false;
-        $("view-text").textContent = `${data.title} · 공유된 트리`;
-        $("btn-remix").hidden = false;
+        setViewNote("viewInvite", { title: data.title });
         $("btn-copy-view").hidden = false;
       }
       applyChrome();
       syncQuiet();
+      loadLetters();
     } catch (error) {
       showMissing();
     }
   }
 
   function syncQuiet() {
-    $("item-count").textContent = `장식 ${studio.getItems().length}개`;
-    const photoLabel = document.querySelector("#upload-card span");
-    if (photoLabel) photoLabel.textContent = `내 사진 · ${studio.photoCount()}/5`;
+    paintCounts();
     $("btn-undo").disabled = !studio.canUndo();
   }
 
@@ -466,41 +549,26 @@
     studio.setMode("view");
     studio.setItems([]);
     $("view-bar").hidden = false;
-    $("view-text").textContent = "이 주소의 트리를 찾지 못했어요.";
-    $("btn-remix").hidden = true;
     $("btn-copy-view").hidden = true;
+    $("letters").hidden = true;
+    $("received").hidden = true;
+    setViewNote("viewMissing");
     $("stage-message").hidden = false;
-    $("stage-message").textContent = "링크를 다시 확인해 주세요.";
+    $("stage-message").textContent = t("checkLink");
     applyChrome();
-  }
-
-  function remix() {
-    const currentTitle = titleInput.value.trim() || "나의 크리스마스 트리";
-    mode = "edit";
-    code = null;
-    token = null;
-    savedOnce = false;
-    studio.setMode("edit");
-    $("view-bar").hidden = true;
-    $("stage-message").hidden = true;
-    titleInput.value = currentTitle;
-    history.pushState({}, "", "/");
-    applyChrome();
-    markDirty();
-    toast("장식을 복사했어요. 저장하면 새로운 링크가 만들어져요.");
   }
 
   async function saveTree() {
     if (saving || mode !== "edit") return;
     const payload = {
-      title: titleInput.value.trim() || "나의 크리스마스 트리",
+      title: titleInput.value.trim() || t("defaultTitle"),
       items: studio.getItems(),
       tree: studio.getTreeStyle(),
       twinkle: studio.getTwinkle(),
     };
     saving = true;
     saveButton.disabled = true;
-    saveButton.textContent = "저장하는 중";
+    saveButton.textContent = t("saving");
     try {
       const response = await fetch(code ? `/api/trees/${code}` : "/api/trees", {
         method: code ? "PUT" : "POST",
@@ -511,7 +579,7 @@
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "저장하지 못했어요.");
+      if (!response.ok) throw new Error(data.error || t("connectFail"));
       code = data.code;
       if (data.edit_token) {
         token = data.edit_token;
@@ -519,16 +587,19 @@
       }
       savedOnce = true;
       titleInput.value = data.title;
+      titleCustom = !(window.isDefaultTitle && window.isDefaultTitle(data.title));
       history.replaceState({}, "", `/t/${code}`);
-      $("save-state").textContent = "저장됨";
+      setSaveNote("saveSaved");
       $("share-url").value = `${location.origin}/t/${code}`;
       $("share-dialog").showModal();
+      applyChrome();
+      loadLetters();
     } catch (error) {
-      toast(error.message || "서버에 연결하지 못했어요.");
+      toast(say(error, "connectFail"));
     } finally {
       saving = false;
       saveButton.disabled = false;
-      saveButton.textContent = "저장하고 공유";
+      saveButton.textContent = t("save");
     }
   }
 
@@ -537,7 +608,7 @@
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(text);
-        toast("링크를 복사했어요.");
+        toast(t("copied"));
         return;
       } catch (error) {
         // HTTP로 연 서버이거나 브라우저가 클립보드를 막으면 아래 방식으로 복사합니다.
@@ -561,7 +632,7 @@
     }
     area.remove();
     if (copied) {
-      toast("링크를 복사했어요.");
+      toast(t("copied"));
       return;
     }
     const input = $("share-url");
@@ -572,10 +643,142 @@
       input.focus();
       input.select();
     } catch (error) {
-      toast("링크를 복사하지 못했어요. 주소창의 주소를 복사해 주세요.");
+      toast(t("copyFail"));
       return;
     }
-    toast("자동 복사가 막혀 링크를 선택해 두었어요.");
+    toast(t("copyManual"));
+  }
+
+  function onLetterPhotoPicked() {
+    const file = $("letter-photo").files && $("letter-photo").files[0];
+    if (!file) {
+      clearLetterPhoto();
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      clearLetterPhoto();
+      toast(t("letterPhotoOnly"));
+      return;
+    }
+    letterPhotoLabel = file.name;
+    $("letter-photo-name").textContent = file.name;
+    $("btn-letter-photo-clear").hidden = false;
+  }
+
+  function clearLetterPhoto() {
+    letterPhotoLabel = "";
+    $("letter-photo").value = "";
+    $("letter-photo-name").textContent = t("photoNone");
+    $("btn-letter-photo-clear").hidden = true;
+  }
+
+  async function sendLetter(event) {
+    event.preventDefault();
+    if (sendingLetter || mode !== "view" || !code) return;
+    const message = $("letter-message").value.trim();
+    const author = $("letter-author").value.trim();
+    if (!message) {
+      toast(t("letterNeeded"));
+      return;
+    }
+    sendingLetter = true;
+    const button = $("btn-send-letter");
+    button.disabled = true;
+    try {
+      let media = null;
+      const file = $("letter-photo").files && $("letter-photo").files[0];
+      if (file) {
+        if (!file.type.startsWith("image/")) throw new Error(t("letterPhotoOnly"));
+        const blob = await compressImage(file);
+        const body = new FormData();
+        body.append("file", blob, "letter.jpg");
+        const uploaded = await fetch("/api/media", { method: "POST", body });
+        const uploadedData = await uploaded.json();
+        if (!uploaded.ok) throw new Error(uploadedData.error || t("uploadFail"));
+        media = uploadedData.id;
+      }
+      const response = await fetch(`/api/trees/${code}/letters`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, message, media }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t("letterFail"));
+      $("letter-form").reset();
+      clearLetterPhoto();
+      toast(t("letterSent"));
+      await loadLetters();
+    } catch (error) {
+      toast(say(error, "letterFail"));
+    } finally {
+      sendingLetter = false;
+      button.disabled = false;
+    }
+  }
+
+  async function loadLetters() {
+    if (!code) return;
+    try {
+      const response = await fetch(`/api/trees/${code}/letters`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t("letterLoadFail"));
+      paintLetters(data.letters || []);
+    } catch (error) {
+      toast(say(error, "letterLoadFail"));
+    }
+  }
+
+  function paintLetters(letters) {
+    latestLetters = letters || [];
+    $("letter-count").textContent = t("letterCount", { n: latestLetters.length });
+    fillLetterList($("letter-list"), latestLetters);
+    fillLetterList($("owner-letter-list"), latestLetters);
+  }
+
+  function fillLetterList(container, letters) {
+    container.replaceChildren();
+    if (!letters.length) {
+      const empty = document.createElement("p");
+      empty.className = "letter-empty";
+      empty.textContent = t("letterEmpty");
+      container.appendChild(empty);
+      return;
+    }
+    letters.forEach((letter) => {
+      const card = document.createElement("article");
+      card.className = "letter-card";
+      const meta = document.createElement("div");
+      meta.className = "letter-meta";
+      const author = document.createElement("strong");
+      const name = letter.author || t("anonymous");
+      author.textContent = name;
+      const time = document.createElement("time");
+      time.dateTime = letter.created_at || "";
+      time.textContent = formatWhen(letter.created_at);
+      meta.append(author, time);
+      const body = document.createElement("p");
+      body.className = "letter-body";
+      body.textContent = letter.message || "";
+      card.append(meta, body);
+      if (letter.photo) {
+        const image = document.createElement("img");
+        image.src = letter.photo;
+        image.alt = t("photoAlt", { name });
+        card.appendChild(image);
+      }
+      container.appendChild(card);
+    });
+  }
+
+  function formatWhen(iso) {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat(window.treeLocale ? window.treeLocale() : "ko-KR", {
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   }
 
   function toast(message) {

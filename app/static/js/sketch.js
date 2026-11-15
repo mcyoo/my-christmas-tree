@@ -1,45 +1,59 @@
 (function () {
   const CATALOG = [
-    { group: "오너먼트", type: "bauble", label: "빨간 구", color: "#d23b3b" },
-    { group: "오너먼트", type: "bauble", label: "금색 구", color: "#e0b44a" },
-    { group: "오너먼트", type: "bauble", label: "푸른 구", color: "#3d7ec9" },
-    { group: "오너먼트", type: "bauble", label: "초록 구", color: "#2f9d62" },
-    { group: "오너먼트", type: "bauble", label: "보라 구", color: "#8d62c4" },
-    { group: "오너먼트", type: "bauble", label: "하얀 구", color: "#f4f1ea" },
-    { group: "오너먼트", type: "teardrop", label: "빨간 물방울", color: "#c73838" },
-    { group: "오너먼트", type: "teardrop", label: "금색 물방울", color: "#e0b44a" },
-    { group: "오너먼트", type: "icicle", label: "고드름", color: "#d7e7f2" },
-    { group: "오너먼트", type: "egg", label: "유리 알", color: "#f2efe4" },
-    { group: "오너먼트", type: "star", label: "별", color: "#f3d36b" },
-    { group: "오너먼트", type: "bell", label: "종", color: "#e6c15a" },
-    { group: "오너먼트", type: "bow", label: "리본", color: "#d6456a" },
-    { group: "오너먼트", type: "heart", label: "하트", color: "#e25b7a" },
-    { group: "오너먼트", type: "wreath", label: "리스", color: "#2f7a45" },
-    { group: "조명", type: "strand", label: "전구 감기", color: "#ffe1a8" },
-    { group: "조명", type: "strand", label: "알록달록 전구", color: "#ffffff" },
-    { group: "조명", type: "light", label: "노란 전구", color: "#ffd56a" },
-    { group: "조명", type: "light", label: "빨간 전구", color: "#ff5a5a" },
-    { group: "조명", type: "light", label: "파란 전구", color: "#7ec8ff" },
-    { group: "조명", type: "light", label: "초록 전구", color: "#7dffb2" },
-    { group: "조명", type: "candle", label: "양초", color: "#f3e2b8" },
-    { group: "소품", type: "candy", label: "막대 사탕", color: "#e24b4b" },
-    { group: "소품", type: "gift", label: "빨간 선물", color: "#c0392b" },
-    { group: "소품", type: "gift", label: "초록 선물", color: "#1f8a4c" },
-    { group: "소품", type: "gift", label: "남색 선물", color: "#243e73" },
-    { group: "소품", type: "snowflake", label: "눈송이", color: "#e7f3ff" },
-    { group: "소품", type: "pinecone", label: "솔방울", color: "#8a5a32" },
-    { group: "소품", type: "holly", label: "호랑가시", color: "#1f7a3a" },
-    { group: "소품", type: "poinsettia", label: "포인세티아", color: "#d23b3b" },
-    { group: "소품", type: "apple", label: "사과", color: "#c5362f" },
-    { group: "소품", type: "stocking", label: "양말", color: "#b93a3a" },
-    { group: "소품", type: "mitten", label: "장갑", color: "#b93a3a" },
-    { group: "인형", type: "gingerbread", label: "진저브레드", color: "#c48945" },
-    { group: "인형", type: "angel", label: "천사", color: "#f4efe4" },
-    { group: "인형", type: "nutcracker", label: "호두까기", color: "#b4332c" },
-    { group: "인형", type: "snowman", label: "눈사람", color: "#f7f8f8" },
-    { group: "인형", type: "santa", label: "산타", color: "#c5363a" },
-    { group: "인형", type: "reindeer", label: "순록", color: "#8a5a32" },
-    { group: "인형", type: "cardinal", label: "홍관조", color: "#d23b3b" },
+    { group: "year", key: "ring", type: "ring", color: "#e0b44a" },
+    { group: "year", key: "house", type: "house", color: "#c45c4a" },
+    { group: "year", key: "car", type: "car", color: "#3d7ec9" },
+    { group: "year", key: "baby", type: "baby", color: "#f4c7cf" },
+    { group: "year", key: "cap", type: "cap", color: "#243e73" },
+    { group: "year", key: "plane", type: "plane", color: "#d7e4ef" },
+    { group: "year", key: "paw", type: "paw", color: "#c48945" },
+    { group: "year", key: "key", type: "key", color: "#e0b44a" },
+    { group: "year", key: "cake", type: "cake", color: "#e25b7a" },
+    { group: "year", key: "trophy", type: "trophy", color: "#e6c15a" },
+    { group: "year", key: "book", type: "book", color: "#8d3b4a" },
+    { group: "year", key: "music", type: "music", color: "#243e73" },
+    { group: "year", key: "camera", type: "camera", color: "#3d4a52" },
+    { group: "year", key: "sprout", type: "sprout", color: "#2f9d62" },
+    { group: "ornament", key: "bauble-red", type: "bauble", color: "#d23b3b" },
+    { group: "ornament", key: "bauble-gold", type: "bauble", color: "#e0b44a" },
+    { group: "ornament", key: "bauble-blue", type: "bauble", color: "#3d7ec9" },
+    { group: "ornament", key: "bauble-green", type: "bauble", color: "#2f9d62" },
+    { group: "ornament", key: "bauble-purple", type: "bauble", color: "#8d62c4" },
+    { group: "ornament", key: "bauble-white", type: "bauble", color: "#f4f1ea" },
+    { group: "ornament", key: "teardrop-red", type: "teardrop", color: "#c73838" },
+    { group: "ornament", key: "teardrop-gold", type: "teardrop", color: "#e0b44a" },
+    { group: "ornament", key: "icicle", type: "icicle", color: "#d7e7f2" },
+    { group: "ornament", key: "egg", type: "egg", color: "#f2efe4" },
+    { group: "ornament", key: "star", type: "star", color: "#f3d36b" },
+    { group: "ornament", key: "bell", type: "bell", color: "#e6c15a" },
+    { group: "ornament", key: "bow", type: "bow", color: "#d6456a" },
+    { group: "ornament", key: "heart", type: "heart", color: "#e25b7a" },
+    { group: "ornament", key: "wreath", type: "wreath", color: "#2f7a45" },
+    { group: "light", key: "strand-warm", type: "strand", color: "#ffe1a8" },
+    { group: "light", key: "strand-multi", type: "strand", color: "#ffffff" },
+    { group: "light", key: "light-yellow", type: "light", color: "#ffd56a" },
+    { group: "light", key: "light-red", type: "light", color: "#ff5a5a" },
+    { group: "light", key: "light-blue", type: "light", color: "#7ec8ff" },
+    { group: "light", key: "light-green", type: "light", color: "#7dffb2" },
+    { group: "light", key: "candle", type: "candle", color: "#f3e2b8" },
+    { group: "prop", key: "candy", type: "candy", color: "#e24b4b" },
+    { group: "prop", key: "gift-red", type: "gift", color: "#c0392b" },
+    { group: "prop", key: "gift-green", type: "gift", color: "#1f8a4c" },
+    { group: "prop", key: "gift-navy", type: "gift", color: "#243e73" },
+    { group: "prop", key: "snowflake", type: "snowflake", color: "#e7f3ff" },
+    { group: "prop", key: "pinecone", type: "pinecone", color: "#8a5a32" },
+    { group: "prop", key: "holly", type: "holly", color: "#1f7a3a" },
+    { group: "prop", key: "poinsettia", type: "poinsettia", color: "#d23b3b" },
+    { group: "prop", key: "apple", type: "apple", color: "#c5362f" },
+    { group: "prop", key: "stocking", type: "stocking", color: "#b93a3a" },
+    { group: "prop", key: "mitten", type: "mitten", color: "#b93a3a" },
+    { group: "figure", key: "gingerbread", type: "gingerbread", color: "#c48945" },
+    { group: "figure", key: "angel", type: "angel", color: "#f4efe4" },
+    { group: "figure", key: "nutcracker", type: "nutcracker", color: "#b4332c" },
+    { group: "figure", key: "snowman", type: "snowman", color: "#f7f8f8" },
+    { group: "figure", key: "santa", type: "santa", color: "#c5363a" },
+    { group: "figure", key: "reindeer", type: "reindeer", color: "#8a5a32" },
+    { group: "figure", key: "cardinal", type: "cardinal", color: "#d23b3b" },
   ];
 
   const HIT = {
@@ -71,7 +85,23 @@
     egg: 32,
     wreath: 32,
     mitten: 32,
+    ring: 32,
+    house: 34,
+    car: 34,
+    baby: 32,
+    cap: 34,
+    plane: 34,
+    paw: 32,
+    key: 34,
+    cake: 32,
+    trophy: 34,
+    book: 32,
+    music: 34,
+    camera: 34,
+    sprout: 32,
   };
+
+  const GLOW_MODES = ["steady", "soft", "chase", "spark", "random"];
 
   const MIN_SCALE = 0.45;
   const MAX_SCALE = 2.4;
@@ -691,6 +721,210 @@
     }
   }
 
+  function drawRing(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noFill();
+    p.stroke(r, g, b);
+    p.strokeWeight(7);
+    p.ellipse(0, 10, 34, 26);
+    p.noStroke();
+    p.fill(236, 246, 255);
+    p.beginShape();
+    p.vertex(0, -22);
+    p.vertex(7, -8);
+    p.vertex(0, -2);
+    p.vertex(-7, -8);
+    p.endShape(p.CLOSE);
+    p.fill(255, 255, 255, 180);
+    p.circle(-2, -12, 3);
+  }
+
+  function drawHouse(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.triangle(0, -36, -34, -2, 34, -2);
+    p.fill(246, 240, 226);
+    p.rect(-24, -2, 48, 36, 2);
+    p.fill(92, 58, 36);
+    p.rect(-8, 12, 16, 22);
+    p.fill(150, 198, 224);
+    p.rect(-18, 6, 10, 10, 1);
+    p.rect(8, 6, 10, 10, 1);
+    p.fill(232, 196, 112);
+    p.circle(3, 22, 3);
+  }
+
+  function drawCar(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.rect(-30, -2, 60, 20, 7);
+    p.rect(-16, -18, 32, 18, 7);
+    p.fill(186, 222, 238);
+    p.rect(-12, -14, 12, 10, 2);
+    p.rect(2, -14, 12, 10, 2);
+    p.fill(36, 38, 42);
+    p.circle(-16, 18, 14);
+    p.circle(16, 18, 14);
+    p.fill(220, 224, 226);
+    p.circle(-16, 18, 6);
+    p.circle(16, 18, 6);
+  }
+
+  function drawBaby(p) {
+    p.noStroke();
+    p.fill(248, 236, 228);
+    p.ellipse(0, 18, 40, 26);
+    p.fill(236, 206, 176);
+    p.circle(0, -6, 22);
+    p.fill(232, 176, 184);
+    p.ellipse(0, -18, 24, 10);
+    p.fill(70, 48, 40);
+    p.circle(-4, -6, 2.4);
+    p.circle(4, -6, 2.4);
+    p.stroke(196, 110, 114);
+    p.strokeWeight(1.6);
+    p.noFill();
+    p.arc(0, -2, 8, 6, 0.15, Math.PI - 0.15);
+  }
+
+  function drawCap(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.quad(-36, -2, 0, -16, 36, -2, 0, 10);
+    p.rect(-14, 0, 28, 16, 2);
+    p.stroke(232, 196, 112);
+    p.strokeWeight(2);
+    p.line(10, -4, 18, 20);
+    p.noStroke();
+    p.fill(232, 196, 112);
+    p.circle(18, 22, 8);
+  }
+
+  function drawPlane(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.ellipse(4, 2, 58, 16);
+    p.triangle(-6, 2, 12, -28, 18, 2);
+    p.triangle(-6, 2, 12, 30, 18, 2);
+    p.triangle(22, -4, 34, 2, 22, 8);
+    p.fill(170, 206, 224);
+    p.ellipse(-6, 0, 12, 7);
+  }
+
+  function drawPaw(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.ellipse(0, 12, 30, 24);
+    p.circle(-16, -6, 12);
+    p.circle(-6, -16, 12);
+    p.circle(7, -16, 12);
+    p.circle(17, -6, 12);
+  }
+
+  function drawKey(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.circle(-12, -10, 24);
+    p.fill(34, 42, 40);
+    p.circle(-12, -10, 9);
+    p.fill(r, g, b);
+    p.rect(-2, -5, 32, 8, 2);
+    p.rect(18, 3, 6, 12, 1);
+    p.rect(10, 3, 5, 8, 1);
+  }
+
+  function drawCake(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.rect(-26, 2, 52, 26, 5);
+    p.fill(255, 236, 220);
+    p.rect(-26, -8, 52, 14, 4);
+    p.fill(246, 246, 246);
+    p.circle(-12, 14, 5);
+    p.circle(0, 14, 5);
+    p.circle(12, 14, 5);
+    p.fill(232, 196, 112);
+    p.rect(-2, -24, 4, 16);
+    p.fill(255, 186, 70);
+    p.ellipse(0, -26, 8, 12);
+  }
+
+  function drawTrophy(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noFill();
+    p.stroke(r, g, b);
+    p.strokeWeight(4);
+    p.arc(-18, -2, 16, 24, p.HALF_PI, p.PI + p.HALF_PI);
+    p.arc(18, -2, 16, 24, -p.HALF_PI, p.HALF_PI);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.rect(-16, -22, 32, 30, 10);
+    p.rect(-5, 8, 10, 12);
+    p.rect(-16, 20, 32, 8, 2);
+    p.fill(255, 244, 210);
+    p.triangle(0, -14, 5, -4, -5, -4);
+  }
+
+  function drawBook(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.rect(-28, -20, 26, 42, 3);
+    p.fill(Math.min(255, r + 36), Math.min(255, g + 24), Math.min(255, b + 16));
+    p.rect(2, -20, 26, 42, 3);
+    p.fill(246, 241, 228);
+    p.rect(-24, -15, 18, 32, 1);
+    p.rect(6, -15, 18, 32, 1);
+    p.fill(r, g, b);
+    p.rect(-2, -20, 4, 42);
+  }
+
+  function drawMusic(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.ellipse(-14, 16, 18, 12);
+    p.ellipse(12, 8, 18, 12);
+    p.rect(-8, -30, 4, 46);
+    p.rect(18, -36, 4, 44);
+    p.rect(-8, -30, 30, 6, 2);
+  }
+
+  function drawCamera(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.rect(-30, -8, 60, 36, 7);
+    p.rect(-10, -20, 18, 14, 3);
+    p.fill(230, 236, 238);
+    p.circle(2, 10, 24);
+    p.fill(120, 176, 206);
+    p.circle(2, 10, 14);
+    p.fill(255, 214, 90);
+    p.circle(20, -1, 6);
+  }
+
+  function drawSprout(p, color) {
+    const [r, g, b] = rgb(color);
+    p.noFill();
+    p.stroke(r, g, b);
+    p.strokeWeight(4);
+    p.line(0, 22, 0, -4);
+    p.noStroke();
+    p.fill(r, g, b);
+    p.ellipse(-12, -8, 22, 14);
+    p.ellipse(12, -14, 22, 14);
+    p.fill(176, 112, 64);
+    p.ellipse(0, 26, 30, 12);
+  }
+
   const DRAW = {
     bauble: drawBauble,
     star: drawStar,
@@ -720,13 +954,31 @@
     wreath: drawWreath,
     mitten: drawMitten,
     strand: drawStrand,
+    ring: drawRing,
+    house: drawHouse,
+    car: drawCar,
+    baby: drawBaby,
+    cap: drawCap,
+    plane: drawPlane,
+    paw: drawPaw,
+    key: drawKey,
+    cake: drawCake,
+    trophy: drawTrophy,
+    book: drawBook,
+    music: drawMusic,
+    camera: drawCamera,
+    sprout: drawSprout,
   };
+
+  function textFor(key) {
+    return window.t ? window.t(key) : key;
+  }
 
   function labelFor(item) {
     const known = CATALOG.find((entry) => entry.type === item.type && entry.color === item.color);
-    if (item.type === "photo") return item.kind === "video" ? "내 영상" : "내 사진";
-    if (item.type === "strand") return "전구 줄";
-    return known ? known.label : "장식";
+    if (item.type === "photo") return textFor(item.kind === "video" ? "myVideo" : "myPhoto");
+    if (known) return textFor(`item.${known.key}`);
+    return textFor("ornamentFallback");
   }
 
   window.TREE_CATALOG = CATALOG;
@@ -766,6 +1018,9 @@
           next.media = item.media;
           next.kind = item.kind === "video" ? "video" : "image";
         }
+        if ((item.type === "light" || item.type === "strand") && GLOW_MODES.includes(item.glow)) {
+          next.glow = item.glow;
+        }
         return next;
       });
     }
@@ -781,6 +1036,7 @@
         scale: Number(item.scale) || 1,
         media: item.media || null,
         kind: item.kind || null,
+        glow: GLOW_MODES.includes(item.glow) ? item.glow : null,
         born: 0,
       };
     }
@@ -832,17 +1088,18 @@
       return s * (0.05 + t * 0.36);
     }
 
-    function bulbLevel(index, count) {
-      if (calm || twinkleMode === "steady") return 1;
+    function bulbLevel(index, count, modeName) {
+      const mode = modeName || twinkleMode;
+      if (calm || mode === "steady") return 1;
       const time = renderer.millis() / 1000;
-      if (twinkleMode === "soft") return 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(time * 2.1));
-      if (twinkleMode === "chase") {
+      if (mode === "soft") return 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(time * 2.1));
+      if (mode === "chase") {
         const head = (time * 0.45) % 1;
         const along = count <= 1 ? 0 : index / (count - 1);
         const distance = Math.min(Math.abs(along - head), 1 - Math.abs(along - head));
         return distance < 0.08 ? 1 : 0.22;
       }
-      if (twinkleMode === "spark") return 0.15 + 0.85 * Math.max(0, Math.sin(time * 8 + index * 1.7));
+      if (mode === "spark") return 0.15 + 0.85 * Math.max(0, Math.sin(time * 8 + index * 1.7));
       const gate = Math.floor(time * 3.2 + index * 2.3) % 4;
       return gate === 0 ? 1 : 0.18;
     }
@@ -881,7 +1138,7 @@
     function selectionInfo() {
       const item = items.find((entry) => entry.id === selectedId);
       if (!item) return null;
-      return { id: item.id, label: labelFor(item) };
+      return { id: item.id, type: item.type, glow: item.glow || "inherit", label: labelFor(item) };
     }
 
     function emitSelection() {
@@ -916,15 +1173,15 @@
       if (mode !== "edit") return false;
       if (type !== "photo" && !DRAW[type]) return false;
       if (type === "photo" && items.filter((entry) => entry.type === "photo").length >= 5) {
-        if (notify.onNotice) notify.onNotice("사진과 영상은 5개까지 올릴 수 있어요.");
+        if (notify.onNotice) notify.onNotice(textFor("limitPhotos"));
         return false;
       }
       if (items.length >= MAX_ITEMS) {
-        if (notify.onNotice) notify.onNotice("장식은 80개까지 올릴 수 있어요.");
+        if (notify.onNotice) notify.onNotice(textFor("limitItems"));
         return false;
       }
       if (type === "strand" && !pointInTree(x, y)) {
-        if (notify.onNotice) notify.onNotice("전구는 트리 안에만 감을 수 있어요.");
+        if (notify.onNotice) notify.onNotice(textFor("strandOnly"));
         return false;
       }
       pushUndo();
@@ -938,6 +1195,7 @@
         scale: 1,
         media: extra && extra.media ? extra.media : null,
         kind: extra && extra.kind ? extra.kind : null,
+        glow: null,
         born: renderer ? renderer.millis() : 0,
       };
       if (type === "photo") loadMedia(item);
@@ -1088,7 +1346,7 @@
         p.fill(246, 241, 228);
         p.textAlign(p.CENTER, p.CENTER);
         p.textSize(18);
-        p.text(item.kind === "video" ? "영상" : "사진", 0, -4);
+        p.text(textFor(item.kind === "video" ? "videoShort" : "photoShort"), 0, -4);
         return;
       }
       const source = asset.kind === "video" ? asset.video : asset.image;
@@ -1129,7 +1387,7 @@
         const x = cx - half + half * 2 * t;
         const wave = Math.sin(t * Math.PI);
         const by = y + wave * sag * (t < 0.62 ? 0.85 : -0.2);
-        const glow = bulbLevel(i, count);
+        const glow = bulbLevel(i, count, item.glow);
         const [r, g, b] = rgb(multi ? STRAND_COLORS[i % STRAND_COLORS.length] : item.color);
         const bulb = Math.max(5, s * 0.011 * item.scale);
         p.noStroke();
@@ -1156,7 +1414,7 @@
       const y = item.y * p.height;
       const size = ornamentScale(item);
       if (item.type === "light") {
-        p._twinkle = bulbLevel(Math.round(item.x * 12 + item.y * 7), 8);
+        p._twinkle = bulbLevel(Math.round(item.x * 12 + item.y * 7), 8, item.glow);
       }
       if (item.type === "photo") {
         p.noStroke();
@@ -1233,12 +1491,75 @@
       p.circle(handle.x, handle.y, Math.max(26, 24 * sceneScale()));
     }
 
+    function removePoint(item) {
+      if (item.type === "strand") {
+        const half = treeHalf(item.y);
+        return {
+          x: renderer.width * 0.5 + half * 0.78,
+          y: item.y * renderer.height - Math.max(18, 16 * sceneScale()),
+        };
+      }
+      const radius = itemRadius(item);
+      return {
+        x: item.x * renderer.width + radius * 0.78,
+        y: item.y * renderer.height - radius * 0.78,
+      };
+    }
+
+    function markRadius() {
+      return Math.max(13, 12 * sceneScale());
+    }
+
+    function hitRemove(x, y) {
+      if (mode !== "edit") return null;
+      const item = selectedItem();
+      if (!item) return null;
+      const point = removePoint(item);
+      const dx = x - point.x;
+      const dy = y - point.y;
+      const reach = markRadius() + 6;
+      if (dx * dx + dy * dy <= reach * reach) return item;
+      return null;
+    }
+
+    function deleteItem(id) {
+      const item = items.find((entry) => entry.id === id);
+      if (!item || mode !== "edit") return false;
+      pushUndo();
+      items = items.filter((entry) => entry.id !== id);
+      if (selectedId === id) selectedId = null;
+      emit();
+      emitSelection();
+      return true;
+    }
+
+    function drawRemoveMarks(p) {
+      const item = selectedItem();
+      if (!item || mode !== "edit") return;
+      const point = removePoint(item);
+      const radius = markRadius();
+      p.stroke(255, 248, 240);
+      p.strokeWeight(2);
+      p.fill(196, 69, 60, 240);
+      p.circle(point.x, point.y, radius * 2);
+      p.stroke(255);
+      p.strokeWeight(Math.max(1.8, radius * 0.24));
+      const arm = radius * 0.42;
+      p.line(point.x - arm, point.y - arm, point.x + arm, point.y + arm);
+      p.line(point.x + arm, point.y - arm, point.x - arm, point.y + arm);
+    }
+
     function pointerDown(x, y) {
       if (!ready || mode !== "edit") return;
       const now = performance.now();
       if (now - lastPointer < 40) return;
       lastPointer = now;
       press = null;
+      const removeHit = hitRemove(x, y);
+      if (removeHit) {
+        deleteItem(removeHit.id);
+        return;
+      }
       if (hitHandle(x, y)) {
         const item = selectedItem();
         const dx = x - item.x * renderer.width;
@@ -1438,6 +1759,16 @@
       getTwinkle() {
         return twinkleMode;
       },
+      setSelectedGlow(modeName) {
+        const item = selectedItem();
+        if (!item || mode !== "edit" || (item.type !== "light" && item.type !== "strand")) return false;
+        if (modeName !== "inherit" && !GLOW_MODES.includes(modeName)) return false;
+        pushUndo();
+        item.glow = modeName === "inherit" ? null : modeName;
+        emit();
+        emitSelection();
+        return true;
+      },
       photoCount() {
         return items.filter((item) => item.type === "photo").length;
       },
@@ -1493,6 +1824,7 @@
           drawPlaced(p, { ...ghost, rot: 0, scale: ghost.scale || 1, born: 0 }, 170);
         }
         drawSelection(p);
+        drawRemoveMarks(p);
       };
 
       let lastTouch = 0;

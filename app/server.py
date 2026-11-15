@@ -52,12 +52,30 @@ ORNAMENT_TYPES = {
     "mitten",
     "strand",
     "photo",
+    "ring",
+    "house",
+    "car",
+    "baby",
+    "cap",
+    "plane",
+    "paw",
+    "key",
+    "cake",
+    "trophy",
+    "book",
+    "music",
+    "camera",
+    "sprout",
 }
 TREE_STYLES = {"green", "snow", "wood"}
 TWINKLES = {"steady", "soft", "chase", "spark", "random"}
 MEDIA_RE = re.compile(r"^[a-z0-9]{16}$")
 MEDIA_EXTS = {".jpg", ".png", ".webp", ".gif", ".mp4", ".webm"}
 MAX_PHOTOS = 5
+MAX_LETTERS = 200
+MAX_LETTER = 400
+MAX_AUTHOR = 20
+IMAGE_EXTS = {".jpg", ".png", ".webp", ".gif"}
 
 app = Flask(__name__, static_folder=str(STATIC_DIR))
 app.json.ensure_ascii = False
@@ -86,6 +104,21 @@ def init_db():
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS letters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tree_code TEXT NOT NULL,
+                author TEXT NOT NULL,
+                message TEXT NOT NULL,
+                media_id TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_letters_tree ON letters (tree_code, id)"
+        )
 
 
 def now():
@@ -97,7 +130,7 @@ def error(message, status):
 
 
 def media_dir():
-    return Path(DB_PATH).parent / "media"
+    return Path(DB_PATH).expanduser().resolve().parent / "media"
 
 
 def media_path(media_id):
@@ -152,6 +185,10 @@ def clean_item(raw):
             return None
         item["media"] = media_id
         item["kind"] = kind
+    if ornament_type in {"light", "strand"}:
+        glow = raw.get("glow")
+        if glow in TWINKLES:
+            item["glow"] = glow
     return item
 
 
@@ -217,6 +254,45 @@ def public_tree(row, include_token=False):
     return payload
 
 
+def public_letter(row):
+    media_id = row["media_id"]
+    return {
+        "id": row["id"],
+        "author": row["author"],
+        "message": row["message"],
+        "photo": f"/media/{media_id}" if media_id else None,
+        "created_at": row["created_at"],
+    }
+
+
+def clean_letter(data):
+    if not isinstance(data, dict):
+        return None, "요청 형식이 올바르지 않습니다."
+    author = data.get("author") or "익명"
+    if not isinstance(author, str):
+        return None, "이름이 올바르지 않습니다."
+    author = " ".join(author.replace("\x00", "").split())[:MAX_AUTHOR] or "익명"
+    message = data.get("message")
+    if not isinstance(message, str):
+        return None, "편지 내용이 올바르지 않습니다."
+    message = message.replace("\x00", "").strip()
+    if not message:
+        return None, "편지 내용을 적어 주세요."
+    if len(message) > MAX_LETTER:
+        return None, f"편지는 {MAX_LETTER}자까지 남길 수 있습니다."
+    media_id = data.get("media")
+    if media_id in ("", None):
+        media_id = None
+    elif not isinstance(media_id, str):
+        return None, "사진을 찾지 못했습니다."
+    else:
+        path = media_path(media_id)
+        if path is None or path.suffix.lower() not in IMAGE_EXTS:
+            return None, "편지에는 사진만 첨부할 수 있습니다."
+        media_id = path.stem
+    return {"author": author, "message": message, "media_id": media_id}, None
+
+
 def new_code(connection):
     for _ in range(8):
         code = "".join(secrets.choice(ALPHABET) for _ in range(8))
@@ -275,6 +351,49 @@ def read_tree(code):
     if row is None:
         return error("트리를 찾을 수 없습니다.", 404)
     return jsonify(public_tree(row))
+
+
+@app.get("/api/trees/<code>/letters")
+def list_letters(code):
+    if not CODE_RE.fullmatch(code):
+        return error("트리를 찾을 수 없습니다.", 404)
+    with connect() as connection:
+        tree = connection.execute("SELECT 1 FROM trees WHERE code = ?", (code,)).fetchone()
+        if tree is None:
+            return error("트리를 찾을 수 없습니다.", 404)
+        rows = connection.execute(
+            "SELECT * FROM letters WHERE tree_code = ? ORDER BY id DESC",
+            (code,),
+        ).fetchall()
+    return jsonify({"letters": [public_letter(row) for row in rows]})
+
+
+@app.post("/api/trees/<code>/letters")
+def create_letter(code):
+    if not CODE_RE.fullmatch(code):
+        return error("트리를 찾을 수 없습니다.", 404)
+    payload, message = clean_letter(request.get_json(silent=True))
+    if message:
+        return error(message, 400)
+    with connect() as connection:
+        tree = connection.execute("SELECT 1 FROM trees WHERE code = ?", (code,)).fetchone()
+        if tree is None:
+            return error("트리를 찾을 수 없습니다.", 404)
+        count = connection.execute(
+            "SELECT COUNT(*) AS total FROM letters WHERE tree_code = ?",
+            (code,),
+        ).fetchone()["total"]
+        if count >= MAX_LETTERS:
+            return error("이 트리에는 편지를 더 남길 수 없어요.", 400)
+        cursor = connection.execute(
+            """
+            INSERT INTO letters (tree_code, author, message, media_id, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (code, payload["author"], payload["message"], payload["media_id"], now()),
+        )
+        row = connection.execute("SELECT * FROM letters WHERE id = ?", (cursor.lastrowid,)).fetchone()
+    return jsonify(public_letter(row)), 201
 
 
 @app.put("/api/trees/<code>")
